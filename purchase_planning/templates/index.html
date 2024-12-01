@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Purchase Planner</title>
+    </head>
+    <body>
+        <h1>Purchase Planner</h1>
+        <p>Welcome to the {{ group_name }} family, {{ user_name }}!</p>
+        {% if has_lists %}
+        <p>
+            Select one of the shopping lists:
+            <ul>
+                {% for list in lists %}
+                <li><a href="/view_list?id={{ list.id }}">{{ list.name }}</a> <a href="/remove_list?id={{ list.id }}">remove</a></li>
+                {% endfor %}
+            </ul>
+        </p>
+        {% else %}
+        <p>You have no shopping lists yet. Create one!</p>
+        {% endif %}
+        <p><a href="/list_form">Create new shopping list</a></p>
+        <script>
+            {% if has_massage %}
+            alert("{{ msg }}");
+            {% endif %}
+        </script>
+    </body>
+</html>

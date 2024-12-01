@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>New item</title>
+    </head>
+    <body>
+        <h1>Create new item</h1>
+        <form id="new_item_form" action="/add_new_item">
+            <label for="name">Name:</label><br>
+            <input type="text" id="name" name="name" placeholder="e.g. Netfilx subscription" required><br>
+            <label for="description">Description:</label><br>
+            <textarea id="description" name="description" placeholder="e.g. Monthly pay for family Netflix account" rows="4" cols="50" required></textarea><br>
+            <label for="name">Additional information:</label><br>
+            <textarea id="add_info" name="add_info" placeholder="e.g. Pay for Netflix in October" rows="4" cols="50" required></textarea><br>
+            <label for="price">Price:</label><br>
+            <input type="number" id="price" name="price" min="0" step="0.01" required><br>
+            <input type="hidden" id="list_id" name="list_id" value="{{ list_id }}">
+            <button type="submit">Add item</button>
+        </form>
+    </body>
+</html>

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Profile</title>
+    </head>
+    <body>
+        <h1>Welcome to your profile!</h1>
+        <p>Email: {{ email }}</p>
+        {% if message %}
+        <p id="status-message">{{ message }}</p>
+        {% endif %}
+        <form action="{{ url_for('profile') }}" method="POST">
+            <input type="hidden" name="email" value="{{ email }}">
+            <label for="current_password">Current Password:</label>
+            <input type="password" id="current_password" name="current_password" required><br>
+            
+            <label for="new_password">New Password:</label>
+            <input type="password" id="new_password" name="new_password" required><br>
+            
+            <input type="submit" value="Change Password">
+        </form>
+        <script>
+    
+            setTimeout(() => {
+                const message = document.getElementById('status-message');
+                if (message) {
+                    message.style.display = 'none'; // Приховуємо повідомлення
+                }
+            }, 5000); // 5000 мс = 5 секунд
+        </script>
+    </body>
+</html>
+{% endblock %}

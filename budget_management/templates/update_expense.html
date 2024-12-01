@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Update Expense{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mt-4">Update Expense</h2>
+    <form action="{{ url_for('update_expense', expense_id=expense['expense_id']) }}" method="POST">
+        <input type="hidden" name="budget_id" value="{{ expense['budget_id'] }}">
+        <div class="form-group">
+            <label for="description">Description</label>
+            <input type="text" name="description" id="description" class="form-control" 
+                   value="{{ expense['description'] }}" required>
+        </div>
+        <div class="form-group">
+            <label for="price">Price</label>
+            <input type="number" name="price" id="price" class="form-control" 
+                   value="{{ expense['price'] }}" min="0" required>
+        </div>
+        <div class="form-group">
+            <label for="amount">Amount</label>
+            <input type="number" name="amount" id="amount" class="form-control" 
+                   value="{{ expense['amount'] if expense['amount'] is not none else 1 }}" min="1">
+        </div>
+        <div class="form-group">
+            <label for="category_id">Category</label>
+            <select name="category_id" id="category_id" class="form-control" required>
+                {% for category in categories %}
+                <option value="{{ category[0] }}" 
+                        {% if category[0] == expense['category_id'] %}selected{% endif %}>
+                    {{ category[1] }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="expense_type">Expense Type</label>
+            <select name="expense_type" id="expense_type" class="form-control" required>
+                <option value="current" {% if expense['expense_type'] == 'current' %}selected{% endif %}>Current</option>
+                <option value="planned" {% if expense['expense_type'] == 'planned' %}selected{% endif %}>Planned</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Update Expense</button>
+        <a href="{{ url_for('view_expenses', budget_id=expense['budget_id']) }}" class="btn btn-secondary mt-3">Cancel</a>
+    </form>
+</div>
+{% endblock %}

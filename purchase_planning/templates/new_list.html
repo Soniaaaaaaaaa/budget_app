@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>New shopping list</title>
+    </head>
+    <body>
+        <h1>Create new shopping list</h1>
+        <form id="new_list_form" action="/add_new_list">
+            <label for="name">List name:</label><br>
+            <input type="text" id="name" name="name" required><br>
+            <label for="amount">Maximum amount:</label><br>
+            <input type="number" id="amount" name="amount" min="0" step="0.01" required><br>
+            <button type="submit">Create list</button>
+        </form>
+    </body>
+</html>

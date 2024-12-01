@@ -1,0 +1,39 @@
+services:
+  auth:
+    container_name: auth
+    build: ./auth
+    ports:
+      - "5000:5000"
+    environment:
+       - JWT_SECRET="561ee36ac433f36ae868a5a88278dc9f09cfa3c5c0d976cfe9611db152195fdf" # це тіки для цього сервісу поки
+    #  - DB_URL=DB_URL=mysql://root:@host.docker.internal:3306/budget_app
+    extra_hosts:
+       - "host.docker.internal:172.17.0.1" #дописать для кожного сервісу бо по іншому бд не буде підключаться
+  # management:
+  #   container_name: management
+  #   build: ./budget_management
+  #   ports:
+  #     - "5001:5001"
+  #   extra_hosts:
+  #   - "host.docker.internal:172.17.0.1"
+  # analytics:
+  #   container_name: analytics
+  #   build: ./analytics
+  #   ports:
+  #     - "5002:5002"
+  #   environment:
+  #     - DB_URL=DB_URL=mysql://root:@host.docker.internal:3306/budget_app
+  # planning:
+  #   container_name: planning
+  #   build: ./purchase_planning
+  #   ports:
+  #     - "5003:5003"
+  #   environment:
+  #     - DB_URL=DB_URL=mysql://root:@host.docker.internal:3306/budget_app
+  # notification:
+  #   container_name: notification
+  #   build: ./notification_system
+  #   ports:
+  #     - "5004:5004"
+  #   environment:
+  #     - DB_URL=DB_URL=mysql://root:@host.docker.internal:3306/budget_app

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{{ shopping_list.name }}</title>
+    </head>
+    <body>
+        <h1>{{ shopping_list.name }}</h1>
+        <p>Family: {{ shopping_list.group.name }}</p>
+        <p>Left balance: {{ shopping_list.balance }}</p>
+        {% if has_items %}
+        <p>
+            Your added items:
+            <ul>
+                {% for item in items %}
+                <li>{{ item.additional_info }} ({{ item.price }}) <a href="/remove_item?item_id={{ item.id }}&list_id={{ shopping_list.id }}">remove</a></li>
+                {% endfor %}
+            </ul>
+        </p>
+        {% else %}
+        <p>You haven't added itmes to the shopping list yet!</p>
+        {% endif %}
+        <p><a href="/item_form?list_id={{ shopping_list.id }}">Add an item</a></p>
+        <p><a href="/">Back</a></p>
+        <script>
+            {% if has_massage %}
+            alert("{{ msg }}");
+            {% endif %}
+        </script>
+    </body>
+</html>
