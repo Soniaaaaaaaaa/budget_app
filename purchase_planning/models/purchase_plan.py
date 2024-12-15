@@ -157,7 +157,7 @@ class PurchasePlan:
 
     @staticmethod
     def check_user_plan(cursor, user_id: int, purchase_plan_id: int) -> bool:
-        query = "SELECT * FROM shopping_list JOIN member ON shopping_list.group_id AND member.group_id WHERE member.user_id = %s AND shopping_list.list_id = %s"
+        query = "SELECT * FROM shopping_list JOIN user ON shopping_list.group_id = user.group_id WHERE user.user_id = %s AND shopping_list.list_id = %s"
         cursor.execute(query, (user_id, purchase_plan_id))
         result = cursor.fetchone()
         return result is not None

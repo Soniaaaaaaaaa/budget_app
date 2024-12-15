@@ -16,6 +16,7 @@ CREATE TABLE member (
     CONSTRAINT `fk_group_id` FOREIGN KEY (`group_id`) REFERENCES `group` (`group_id`)
     CONSTRAINT `fk_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`)
 );
+
 CREATE TABLE user (
     user_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
@@ -45,3 +46,4 @@ INSERT INTO user (email, password, user_role, group_id) VALUES ('sofayankovich01
 -- delete all previou db entities mysql -uroot -p -e"DROP DATABASE auth", mysql -uroot -p -e"DROP USER auth_user@localhost"
 -- SELECT user, host FROM mysql.user;
 -- mysql> exit 
+-- йобана русня

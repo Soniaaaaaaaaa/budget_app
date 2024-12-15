@@ -1,3 +1,5 @@
+version: '1'
+
 services:
   auth:
     container_name: auth
@@ -9,31 +11,53 @@ services:
     #  - DB_URL=DB_URL=mysql://root:@host.docker.internal:3306/budget_app
     extra_hosts:
        - "host.docker.internal:172.17.0.1" #дописать для кожного сервісу бо по іншому бд не буде підключаться
-  # management:
-  #   container_name: management
-  #   build: ./budget_management
-  #   ports:
-  #     - "5001:5001"
-  #   extra_hosts:
-  #   - "host.docker.internal:172.17.0.1"
-  # analytics:
-  #   container_name: analytics
-  #   build: ./analytics
-  #   ports:
-  #     - "5002:5002"
-  #   environment:
-  #     - DB_URL=DB_URL=mysql://root:@host.docker.internal:3306/budget_app
-  # planning:
-  #   container_name: planning
-  #   build: ./purchase_planning
-  #   ports:
-  #     - "5003:5003"
-  #   environment:
-  #     - DB_URL=DB_URL=mysql://root:@host.docker.internal:3306/budget_app
-  # notification:
-  #   container_name: notification
-  #   build: ./notification_system
-  #   ports:
-  #     - "5004:5004"
-  #   environment:
-  #     - DB_URL=DB_URL=mysql://root:@host.docker.internal:3306/budget_app
+
+  management:
+    container_name: management
+    build: ./budget_management
+    ports:
+      - "5001:5001"
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
+
+  analytics:
+    container_name: analytics
+    build: ./analytics
+    ports:
+      - "5002:5002"
+    environment:
+      - DB_URL=DB_URL=mysql://root:@host.docker.internal:3306/budget_app
+
+  planning:
+    container_name: planning
+    build: ./purchase_planning
+    ports:
+      - "5003:5003"
+    environment:
+      - DB_URL=DB_URL=mysql://root:@host.docker.internal:3306/budget_app
+      
+  notification:
+    container_name: notification
+    build: ./notification_system
+    ports:
+      - "5004:5004"
+    environment:
+      - DB_URL=DB_URL=mysql://root:@host.docker.internal:3306/budget_app
+
+  frontend:
+    container_name: frontend
+    build: ./frontend
+    ports:
+      - "8501:8501"
+    depends on:
+      - auth
+      - management
+      - analytics
+      - planning
+      - notification
+    networks:
+      - deploy_network # нужно будет добавить всем для связи между сервисами
+
+networks:
+  deploy_network:
+    driver: bridge

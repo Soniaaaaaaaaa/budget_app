@@ -9,6 +9,7 @@ Item can only belong to one Purchase Plan
 """
 
 from models.group import Group
+from models.semantic_search import SemanticSearch
 
 class ItemBlueprint:
     def __init__(self, item_blueprint_id: int, name: str, description: str):
@@ -39,14 +40,20 @@ class ItemBlueprint:
     @staticmethod
     def add_item_blueprint(cursor, connection, name: str, description: str, group: Group) -> int:
         try:
-            query = 'INSERT INTO item_blueprint (name, description, group_id) VALUES ("%s", "%s", %s)'
-            cursor.execute(query, (name, description, group.id))
-            connection.commit()
-            query = 'SELECT item_blp_id FROM item_blueprint WHERE name = "%s" AND group_id = %s'
-            cursor.execute(query, (name, group.id))
-            result = cursor.fetchone()
-            return int(result[0])
-        except:
+            model = SemanticSearch(group.id)
+            item_blp_id = model.find_similar(f'{name} ({description})')
+            if item_blp_id is None:
+                query = 'INSERT INTO item_blueprint (name, description, group_id) VALUES (%s, %s, %s)'
+                cursor.execute(query, (name, description, group.id))
+                connection.commit()
+                query = 'SELECT item_blp_id FROM item_blueprint WHERE name = %s AND group_id = %s'
+                cursor.execute(query, (name, group.id))
+                result = cursor.fetchone()
+                item_blp_id = int(result[0])
+                model.add_new_point(item_blp_id, f'{name} ({description})')
+            return item_blp_id
+        except Exception as e:
+            print(f'Something went wring here! {e}')
             return None
 
 class Item:

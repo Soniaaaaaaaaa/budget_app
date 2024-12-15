@@ -17,5 +17,17 @@
             <input type="hidden" id="list_id" name="list_id" value="{{ list_id }}">
             <button type="submit">Add item</button>
         </form>
+        {% if has_props %}
+        <p>
+            Here's something you might want to add:
+            <ul>
+                {% for prop in propositions %}
+                <li>{{ prop }}</li>
+                {% endfor %}
+            </ul>
+        </p>
+        {% else %}
+        <p>Keep adding items to lists and we will come up with suggestions ;)</p>
+        {% endif %}
     </body>
 </html>

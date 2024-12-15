@@ -5,112 +5,144 @@ from utils.jwt import create_jwt, decode_jwt
 from config import Config
 import os
 import requests
-
+ 
 server = Flask(__name__)
 server.config.from_object(Config)
 
 mysql = MySQL(server)
 
-@server.route("/login", methods=["GET", "POST"])
+@server.route("/login", methods=["GET"])
 def login():
-    if request.method == "POST":
-        email = request.form["email"]
-        password = request.form["password"]
+    data = request.json
+    email = data["email"]
+    password = data["password"]
         
-        cur = mysql.connection.cursor()
-        user_data = User.get_user_by_email(cur, email)
+    cur = mysql.connection.cursor()
+    user_data = User.get_user_by_email(cur, email)
         
-        if user_data[1] == email and user_data[2] == password:
-            token = create_jwt(email, os.environ.get("JWT_SECRET"), True)
-            response = make_response(redirect(url_for("profile", email=email)))
-            response.set_cookie("user_id", str(user_data[0]))
-            response.set_cookie("user_token", token)
-            return response
-        else:
-            return "Invalid credentials", 401
-    return render_template("login.html")
+    if user_data[1] == email and user_data[2] == password:
+        token = create_jwt(email, os.environ.get("JWT_SECRET"))
+        return {
+            "id": user_data[0],
+            "status":"success",
+            "token": token
+            }
+    else:
+        return {"status": "Invalid credentials"} #401
 
-@server.route("/register", methods=["GET", "POST"])
+@server.route("/register", methods=["POST"])
 def register():
-    if request.method == "POST":
-        email = request.form["email"]
-        password = request.form["password"]
-
-        cur = mysql.connection.cursor()
-        user_data = User.get_user_by_email(cur, email)
+    data = request.json
+    email = data["email"]
+    password = data["password"]
+    cur = mysql.connection.cursor()
+    user_data = User.get_user_by_email(cur, email)
         
-        if user_data:
-            return "Email already exists", 409
+    if user_data:
+        return  {"status":"email already exists"}
         
-        User.create_user(cur, email, password)
-        mysql.connection.commit()
-        cur.close()
-        return render_template("login.html"), 200
-    
-    return render_template("register.html")
+    User.create_user(cur, email, password)
+    mysql.connection.commit()
+    cur.close()
+    return {"status": "success"}
 
 @server.route("/profile", methods=["GET", "POST"])
 def profile():
-    user_id = request.cookies.get("user_id") 
-    if not user_id: 
-        return "id not provided", 400 
+    data = request.json
+    user_id = data["id"]
+    cur = mysql.connection.cursor()
+    user_data = User.get_user_by_id(cur, user_id)
     if request.method == "POST":
-        current_password = request.form.get("current_password")
-        new_password = request.form.get("new_password")
-        cur = mysql.connection.cursor()
-        user_data = User.get_user_by_id(cur, user_id)
-        if user_data[2] == current_password:
-            try:
+        current_password = data["current_password"]
+        new_password = data["new_password"]
+        username = data["username"]
+        if current_password is not None and new_password is not None and user_data[2] == current_password:
                 User.update_passwd(cur, user_data[1], new_password)
                 mysql.connection.commit()
-                message = "Password successfully changed"
-                success = True
-            except Exception as e:
-                message = f"Error updating password: {str(e)}"
-                success = False
+                return {"status": "success"}
+        elif username is not None:
+            User.update_username(cur, user_id, username)
+            mysql.connection.commit()
+            return {"status": "success"}
         else:
-            message = "Invalid current password"
-            success = False
-        return render_template(
-            "profile.html", message=message, success=success,
-        )
-    return render_template("profile.html")
+            return {"status": "Invalid current password"}
+        
+    else:
+        return {
+            "email": user_data[1],
+            "username": user_data[3],
+            "group_id":user_data[4]
+        }
 
-@server.route("/profile", methods=["GET", "POST"])
+@server.route("/group", methods=["GET", "POST"]) # list groups ad user status and username
+def group():
+    data = request.json
+    user_id = data["id"]
+    cur = mysql.connection.cursor()
+    info  = User.groups_info(cur, user_id) 
+    if request.method == "POST":
+        group_name = data["group_name"]
+        if info is not None:
+            User.groups_updata(cur, info[2], group_name)
+            mysql.connection.commit()
+            return {"status": "success"}
+    else:
+        mysql.connection.commit()     
+        return {"group_name": info[0], 
+                "group_status": info[1]
+                }
+
+@server.route("/create_group", methods=["POST"])
+def create_group():
+    data = request.json
+    user_id = data["id"]
+    name = data["group_name"]
+    cur = mysql.connection.cursor()
+    group_id = User.create_group(cur, user_id, name)
+    mysql.connection.commit()  
+    return {"group_id":group_id}
+   
+
+@server.route("/add_member", methods=["POST"])
+def add_member():
+    data = request.json
+    user_id = data["id"]
+    member_email = data["email"]
+    cur = mysql.connection.cursor()
+    User.add_member(cur, user_id, member_email)
+    mysql.connection.commit()  
+    return {"status": "success"} 
+
+@server.route("/delete_member", methods=["POST"])
+def delete_member():
+    data = request.json
+    member_email = data["email"]
+    cur = mysql.connection.cursor()
+    User.delete_member(cur, member_email)
+    mysql.connection.commit()  
+    return {"status": "success"} 
     
+@server.route("/list_members", methods=["GET"])
+def list_member():
+    data = request.json
+    group_id = data["group_id"]
+    cur = mysql.connection.cursor()
+    group_list = User.get_group_members(cur, group_id )
+    mysql.connection.commit()  
+    return jsonify(group_list)
+
 @server.route("/validate", methods=["POST"])
-def validate():
-    token = request.headers.get("Authorization", "").split(" ")[1]
+def validate(): 
+    data = request.json
+    token = data["token"]
     decoded_jwt = decode_jwt(token, os.environ.get("JWT_SECRET"))
     if decoded_jwt:
-        return decoded_jwt, 200
-    return "Unauthorized", 403
+         return {"status": "success"}
+    else: return {"status": "Unauthorized"}
 
-@server.route("/menu")
-def menu():
-    service = request.args.get("service")
-    user_token = request.cookies.get("user_token")
-    user_id = request.cookies.get("user_id")
-
-    if not user_token or not user_id:
-        return "Unauthorized", 401
-
-    if service == "budget":
-        data = call_budget_service(user_token, user_id)
-    elif service == "profile":
-        return redirect(f"/profile?user_id={user_id}")
-    else:
-        return "Service not found", 404
-
-    return jsonify(data)
-
-def call_budget_service(user_token, user_id):
-    headers = {"Authorization": f"Bearer {user_token}"}
-    response = requests.get(f"http://localhost:5001/all_budgets?user_id={user_id}", headers=headers)
-    return response.json()
 
 if __name__ == "__main__":
-    server.run(host="0.0.0.0", port=5007)
+    server.run(host="0.0.0.0", port=5000)
 
 
 

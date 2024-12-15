@@ -4,24 +4,21 @@ class Budget:
         self.group_id = group_id
         self.budget_name = budget_name
         self.total_budget = total_budget
-        self.created_date = created_date
-        self.last_updated = last_updated
-
+        
 
     @staticmethod
     def get_all_budgets_by_group(cursor, group_id):
         query = "SELECT * FROM budget WHERE group_id = %s"
         cursor.execute(query, (group_id,))
-        return [Budget(*row) for row in cursor.fetchall()]
+        result = cursor.fetchall()
+        return [{'budget_id': budget[0], 'budget_name': budget[2], 'total_budget': budget[3]} for budget in result]
 
-
+    
     @staticmethod
-    def get_budget_by_id(cursor, budget_id):
-        query = "SELECT * FROM budget WHERE budget_id = %s"
+    def get_budget_name_by_id(cursor, budget_id):
+        query = "SELECT budget_name, total_budget FROM budget WHERE budget_id = %s"
         cursor.execute(query, (budget_id,))
-        result = cursor.fetchone()
-        columns = [desc[0] for desc in cursor.description] 
-        return dict(zip(columns, result))
+        return cursor.fetchone()
 
 
     @staticmethod
@@ -32,17 +29,8 @@ class Budget:
 
     @staticmethod
     def update_budget(cursor, budget_id, budget_name=None, total_budget=None):
-        query = "UPDATE budget SET"
-        params = []
-        if budget_name:
-            query += " budget_name = %s,"
-            params.append(budget_name)
-        if total_budget:
-            query += " total_budget = %s,"
-            params.append(total_budget)
-        
-        query += " last_updated = CURRENT_TIMESTAMP WHERE budget_id = %s"
-        params.append(budget_id)
+        query = "UPDATE budget SET budget_name = %s, total_budget = %s WHERE budget_id = %s"
+        params = [budget_name, total_budget, budget_id]
 
         cursor.execute(query, tuple(params))
 

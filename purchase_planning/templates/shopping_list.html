@@ -10,11 +10,24 @@
         {% if has_items %}
         <p>
             Your added items:
-            <ul>
+            <table>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Additional information</th>
+                    <th>Price</th>
+                    <th>Remove</th>
+                </tr>
                 {% for item in items %}
-                <li>{{ item.additional_info }} ({{ item.price }}) <a href="/remove_item?item_id={{ item.id }}&list_id={{ shopping_list.id }}">remove</a></li>
+                <tr>
+                    <th>{{ item.item_blueprint.name }}</th>
+                    <th>{{ item.item_blueprint.description }}</th>
+                    <th>{{ item.additional_info }}</th>
+                    <th>{{ item.price }}</th>
+                    <th><a href="/remove_item?item_id={{ item.id }}&list_id={{ shopping_list.id }}">remove</a></th>
+                </tr>
                 {% endfor %}
-            </ul>
+            </table>
         </p>
         {% else %}
         <p>You haven't added itmes to the shopping list yet!</p>

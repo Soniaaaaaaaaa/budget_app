@@ -3,6 +3,7 @@ This script describes the class for the user group of the app
 
 Group has id as the primary key and name
 """
+from datetime import datetime, timedelta
 
 class Group:
     def __init__(self, group_id: int, name: str):
@@ -16,10 +17,10 @@ class Group:
         return self.id != other.id
 
     @staticmethod
-    def get_group_by_user_id(cursor, user_id: int):
+    def get_group_by_id(cursor, group_id: int):
         cols = ["group_id", "group_name"]
-        query = "SELECT group_info.group_id, group_name FROM group_info JOIN member ON group_info.group_id = member.group_id WHERE user_id = %s"
-        cursor.execute(query, (user_id,))
+        query = "SELECT group_id, group_name FROM group_info WHERE group_id = %s"
+        cursor.execute(query, (group_id,))
         result = cursor.fetchone()
         if result is not None:
             result = {col: val for col, val in zip(cols, result)}
@@ -28,3 +29,20 @@ class Group:
             group = Group(group_id, group_name)
             return group
         return None
+    
+    @staticmethod
+    def get_propositions(cursor, group_id: int):
+        cols = ["group_id", "name", "description", "item_num", "last_purchase", "avg_period"]
+        query = "SELECT * FROM proposition WHERE group_id = %s"
+        cursor.execute(query, (group_id,))
+        result = cursor.fetchall()
+        res = []
+        today = datetime.now()
+        for row in result:
+            row = {col: val for col, val in zip(cols, row)}
+            text = f"{row['name']} ({row['description']})"
+            last_purchase: datetime= row["last_purchase"]
+            next_purchase = last_purchase + timedelta(days=int(row['avg_period']))
+            res.append([text, last_purchase.strftime('%d.%m.%Y'), next_purchase])
+        res = sorted(res, key=lambda item: abs((item[-1] - today).days))
+        return [f"{row[0]} - Last added on {row[1]}" for row in res]
